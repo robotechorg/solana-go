@@ -127,6 +127,60 @@ func (inst Create) Build() *Instruction {
 	}}
 }
 
+func (inst Create) BuildToken2022() *Instruction {
+
+	// Find the associatedTokenAddress;
+	associatedTokenAddress, _, _ := solana.FindAssociatedToken2022Address(
+		inst.Wallet,
+		inst.Mint,
+	)
+
+	keys := []*solana.AccountMeta{
+		{
+			PublicKey:  inst.Payer,
+			IsSigner:   true,
+			IsWritable: true,
+		},
+		{
+			PublicKey:  associatedTokenAddress,
+			IsSigner:   false,
+			IsWritable: true,
+		},
+		{
+			PublicKey:  inst.Wallet,
+			IsSigner:   false,
+			IsWritable: false,
+		},
+		{
+			PublicKey:  inst.Mint,
+			IsSigner:   false,
+			IsWritable: false,
+		},
+		{
+			PublicKey:  solana.SystemProgramID,
+			IsSigner:   false,
+			IsWritable: false,
+		},
+		{
+			PublicKey:  solana.Token2022ProgramID,
+			IsSigner:   false,
+			IsWritable: false,
+		},
+		{
+			PublicKey:  solana.SysVarRentPubkey,
+			IsSigner:   false,
+			IsWritable: false,
+		},
+	}
+
+	inst.AccountMetaSlice = keys
+
+	return &Instruction{BaseVariant: bin.BaseVariant{
+		Impl:   inst,
+		TypeID: bin.NoTypeIDDefaultID,
+	}}
+}
+
 // ValidateAndBuild validates the instruction accounts.
 // If there is a validation error, return the error.
 // Otherwise, build and return the instruction.
